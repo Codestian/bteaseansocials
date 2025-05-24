@@ -5,6 +5,7 @@ const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = 3000;
+const cron = require('node-cron');
 
 const uploadDir = path.join(__dirname, 'images');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -48,6 +49,8 @@ db.run(`ALTER TABLE posts ADD COLUMN isPosted BOOLEAN DEFAULT 0`, err => {
 app.post('/upload', upload.single('image'), (req, res) => {
   const { description = '', hashtags = '[]', scheduledDateTime = null } = req.body;
   const imagePath = req.file ? path.join('images', req.file.filename) : null;
+
+  console.log(scheduledDateTime);
 
   db.run(
     `INSERT INTO posts (imagePath, description, hashtags, scheduledDateTime, isPosted)
@@ -109,6 +112,72 @@ app.get('/post/:id', (req, res) => {
     res.json(row);
   });
 });
+
+
+// This cron job runs every minute
+cron.schedule('* * * * *', () => {
+  const now = new Date();
+  // Format to 'YYYY-MM-DDTHH:00:00' (hourly precision, ISO format)
+  const currentHour = now.toISOString().slice(0, 13) + ':00:00';
+
+  // console.log(getCurrentSingaporeMinute());
+
+  // db.get('SELECT * FROM posts ORDER BY ROWID ASC LIMIT 1', (err, row) => {
+  //   if (err) {
+  //     return console.error(err.message);
+  //   }
+  //   console.log(row);
+  // });
+
+  // // Select posts scheduled for this hour and not yet posted
+  // db.all(
+  //   `SELECT * FROM posts WHERE scheduledDateTime = ? AND isPosted = 0`,
+  //   getCurrentSingaporeMinute(),
+  //   (err, rows) => {
+  //     if (err) return console.error('Scheduler DB error:', err);
+
+  //     rows.forEach(row => {
+       
+  //       console.log(`Scheduled post ID ${row.id} is being processed at ${currentHour}`);
+
+  //       // // Mark as posted
+  //       // db.run(
+  //       //   `UPDATE posts SET isPosted = 1 WHERE id = ?`,
+  //       //   [row.id],
+  //       //   err => {
+  //       //     if (err) console.error(`Failed to mark post ${row.id} as posted`);
+  //       //   }
+  //       // );
+  //     });
+  //   }
+  // );
+});
+
+function getCurrentSingaporeMinute() {
+  const now = new Date();
+  // Convert to Singapore time (UTC+8)
+  const sgOffset = 8 * 60; // minutes
+  const localOffset = now.getTimezoneOffset(); // in minutes
+  const sgTime = new Date(now.getTime() + (sgOffset + localOffset) * 60000);
+
+  // Format as 'YYYY-MM-DDTHH:MM'
+  const yyyy = sgTime.getFullYear();
+  const mm = String(sgTime.getMonth() + 1).padStart(2, '0');
+  const dd = String(sgTime.getDate()).padStart(2, '0');
+  const hh = String(sgTime.getHours()).padStart(2, '0');
+  const min = String(sgTime.getMinutes()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
+app.get('/test', (req, res) => {
+  createPost();
+
+  res.json(1)
+});
+
+function createPost() {
+  console.log('test');
+}
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

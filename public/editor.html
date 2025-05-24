@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Social Media Post Creator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    @font-face {
+      font-family: 'Monocraft';
+      src: url('./ttf/Monocraft-SemiBold.ttf') format('truetype');
+    }
+
+    body {
+      font-family: 'Monocraft', monospace, sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .config-wrapper {
+      width: 100%;
+      max-width: 400px;
+      padding-right: 20px;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      max-width: 700px;
+      margin-top: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      display: block;
+      background-color: white;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select,
+    button {
+      width: 100%;
+      max-width: 500px;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    label {
+      margin-top: 10px;
+    }
+
+    @media (min-width: 800px) {
+      .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .config-wrapper {
+        margin-bottom: 0;
+      }
+
+      .canvas-wrapper {
+        margin-top: 0;
+      }
+    }
+
+    #hideBoxesCheckbox {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Create Your Post</h2>
+
+  <div class="container">
+    <div class="config-wrapper">
+      <input type="file" id="upload" accept="image/*" />
+      <input type="text" id="middleText" placeholder="Middle text (red box)" />
+      <input type="text" id="bottomText" placeholder="Bottom text (gray box)" />
+      <input type="text" id="additionalText" placeholder="Additional Text (new box)" />
+      <input type="text" id="overlayText" placeholder="Overlay Text (top left over image)" />
+
+      <label for="redBoxColor">Choose Box Color:</label>
+      <select id="redBoxColor">
+        <option value="lightgray">Light Gray</option>
+        <option value="orange">Orange</option>
+        <option value="green">Green</option>
+        <option value="turquoise">Turquoise</option>
+      </select>
+
+      <label for="hideBoxesCheckbox">Hide boxes:</label>
+      <input type="checkbox" id="hideBoxesCheckbox" />
+
+      <button id="download">Download Image</button>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const uploadInput = document.getElementById('upload');
+    const middleTextInput = document.getElementById('middleText');
+    const bottomTextInput = document.getElementById('bottomText');
+    const additionalTextInput = document.getElementById('additionalText');
+    const overlayTextInput = document.getElementById('overlayText');
+    const redBoxColorSelect = document.getElementById('redBoxColor');
+    const downloadBtn = document.getElementById('download');
+    const hideBoxesCheckbox = document.getElementById('hideBoxesCheckbox');
+
+    const imageBoxSize = 1080;
+    const redBoxHeight = 50;
+    const grayBoxHeight = 150;
+    const additionalBoxHeight = 50;
+    const overlayBoxHeight = 40;
+
+    canvas.width = imageBoxSize;
+    canvas.height = imageBoxSize + redBoxHeight + grayBoxHeight + additionalBoxHeight;
+
+    let img = new Image();
+    let dragging = false;
+    let imgX = 0;
+    let offsetX = 0;
+    let imgScale = 1;
+    let scaledImgWidth = 0;
+    let scaledImgHeight = 0;
+    let redBoxColor = 'orange';
+    let areBoxesHidden = false;
+
+    let stoneImg = new Image();
+    let stonePattern = null;
+    stoneImg.src = "stone.png";
+    stoneImg.onload = () => {
+      stonePattern = ctx.createPattern(stoneImg, 'repeat');
+      draw();
+    };
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (img.complete && img.naturalWidth) {
+        if (areBoxesHidden) {
+          const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+          const sWidth = img.width * scale;
+          const sHeight = img.height * scale;
+          const yOffset = (canvas.height - sHeight) / 2;
+          const minX = canvas.width - sWidth;
+          const maxX = 0;
+          imgX = Math.min(Math.max(imgX, minX), maxX);
+          ctx.drawImage(img, imgX, yOffset, sWidth, sHeight);
+        } else {
+          if (scaledImgWidth > 0) {
+            ctx.drawImage(img, imgX, 0, scaledImgWidth, scaledImgHeight);
+
+            // Draw overlay box with dynamic width
+            const overlayText = overlayTextInput.value.toUpperCase();
+            ctx.font = "22px 'Monocraft', monospace";
+
+            if (overlayText) {
+              const headSize = 40;
+              const padding = 14; // still used between head and text, and right side
+              const margin = 12;
+              const textWidth = ctx.measureText(overlayText).width;
+              const boxWidth = headSize + padding + textWidth + padding;
+              const boxHeight = overlayBoxHeight;
+
+              // Bottom-left position with outer margin
+              const boxX = margin;
+              const boxY = scaledImgHeight - boxHeight - margin;
+
+              // Draw overlay background
+              ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+              ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+              // Load and draw the player head without left padding
+              const headImg = new Image();
+              headImg.src = `heads/${overlayText}.png`;
+              headImg.onload = () => {
+                ctx.drawImage(
+                  headImg,
+                  boxX, // <-- no padding on the left!
+                  boxY + (boxHeight - headSize) / 2,
+                  headSize,
+                  headSize
+                );
+
+              };
+
+              // Fallback: draw text even if image hasn't loaded yet
+              ctx.fillStyle = '#fff';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(
+                overlayText,
+                boxX + headSize + padding,
+                boxY + boxHeight / 2
+              );
+            }
+
+          }
+
+          // Red Box
+          let fillColor;
+          switch (redBoxColor) {
+            case 'lightgray': fillColor = '#2F4F4F'; break;
+            case 'orange': fillColor = 'orange'; break;
+            case 'green': fillColor = 'green'; break;
+            case 'turquoise': fillColor = '#00CED1'; break;
+            default: fillColor = 'orange';
+          }
+
+          ctx.fillStyle = fillColor;
+          ctx.fillRect(0, imageBoxSize, canvas.width, redBoxHeight);
+
+          // Red Box Text
+          const redBoxMiddleY = imageBoxSize + redBoxHeight / 2;
+          const redText = middleTextInput.value.toUpperCase();
+          const letterSpacing = 2;
+          ctx.font = "26px 'Monocraft', monospace";
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = (redBoxColor === 'orange' || redBoxColor === 'turquoise') ? 'rgba(0, 0, 0, 0.6)' : '#fff';
+          let totalWidth = 0;
+          for (let i = 0; i < redText.length; i++) {
+            totalWidth += ctx.measureText(redText[i]).width + letterSpacing;
+          }
+          totalWidth -= letterSpacing;
+          let x = (canvas.width - totalWidth) / 2;
+          for (let i = 0; i < redText.length; i++) {
+            ctx.fillText(redText[i], x, redBoxMiddleY);
+            x += ctx.measureText(redText[i]).width + letterSpacing;
+          }
+
+          // Gray Box
+          ctx.fillStyle = stonePattern || '#1B1B19';
+          ctx.fillRect(0, imageBoxSize + redBoxHeight, canvas.width, grayBoxHeight);
+          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillRect(0, imageBoxSize + redBoxHeight, canvas.width, grayBoxHeight);
+          ctx.fillStyle = '#fff';
+          ctx.font = "36px 'Monocraft', monospace";
+          ctx.textAlign = 'center';
+          const grayBoxMiddleY = imageBoxSize + redBoxHeight + grayBoxHeight / 2;
+          ctx.fillText(bottomTextInput.value, canvas.width / 2, grayBoxMiddleY);
+
+          // Additional Box
+          ctx.fillStyle = '#333';
+          ctx.fillRect(0, imageBoxSize + redBoxHeight + grayBoxHeight, canvas.width, additionalBoxHeight);
+
+          const additionalText = additionalTextInput.value.toUpperCase();
+          ctx.fillStyle = '#fff';
+          ctx.font = "24px 'Monocraft', monospace";
+          const additionalBoxMiddleY = imageBoxSize + redBoxHeight + grayBoxHeight + additionalBoxHeight / 2;
+          let totalWidthAdd = 0;
+          for (let i = 0; i < additionalText.length; i++) {
+            totalWidthAdd += ctx.measureText(additionalText[i]).width + letterSpacing;
+          }
+          totalWidthAdd -= letterSpacing;
+          let xAdd = (canvas.width - totalWidthAdd) / 2;
+          for (let i = 0; i < additionalText.length; i++) {
+            ctx.fillText(additionalText[i], xAdd, additionalBoxMiddleY);
+            xAdd += ctx.measureText(additionalText[i]).width + letterSpacing;
+          }
+        }
+      }
+    }
+
+    uploadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        img = new Image();
+        img.onload = function () {
+          if (!areBoxesHidden) {
+            const scaleH = imageBoxSize / img.height;
+            const scaleW = imageBoxSize / img.width;
+            imgScale = Math.max(scaleH, scaleW);
+            scaledImgWidth = img.width * imgScale;
+            scaledImgHeight = img.height * imgScale;
+            imgX = (imageBoxSize - scaledImgWidth) / 2;
+          } else {
+            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            const sWidth = img.width * scale;
+            imgX = (canvas.width - sWidth) / 2;
+          }
+          draw();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      dragging = true;
+      offsetX = e.offsetX * (canvas.width / canvas.clientWidth) - imgX;
+    });
+    canvas.addEventListener('mouseup', () => (dragging = false));
+    canvas.addEventListener('mouseout', () => (dragging = false));
+    canvas.addEventListener('mousemove', (e) => {
+      if (dragging && img.complete && img.naturalWidth) {
+        const mouseX = e.offsetX * (canvas.width / canvas.clientWidth);
+        imgX = mouseX - offsetX;
+        const minX = canvas.width - scaledImgWidth;
+        const maxX = 0;
+        imgX = Math.min(Math.max(imgX, minX), maxX);
+        draw();
+      }
+    });
+
+    middleTextInput.addEventListener('input', draw);
+    bottomTextInput.addEventListener('input', draw);
+    additionalTextInput.addEventListener('input', draw);
+    overlayTextInput.addEventListener('input', draw);
+
+    redBoxColorSelect.addEventListener('change', (e) => {
+      redBoxColor = e.target.value;
+      switch (redBoxColor) {
+        case 'lightgray': middleTextInput.value = 'PLANNED '; break;
+        case 'orange': middleTextInput.value = 'IN PROGRESS '; break;
+        case 'green': middleTextInput.value = 'COMPLETE '; break;
+        case 'turquoise': middleTextInput.value = 'FUN FACT '; break;
+      }
+      draw();
+    });
+
+    hideBoxesCheckbox.addEventListener('change', (e) => {
+      areBoxesHidden = e.target.checked;
+      if (img.complete && img.naturalWidth) {
+        if (areBoxesHidden) {
+          const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+          const sWidth = img.width * scale;
+          imgX = (canvas.width - sWidth) / 2;
+        } else {
+          const scaleH = imageBoxSize / img.height;
+          const scaleW = imageBoxSize / img.width;
+          imgScale = Math.max(scaleH, scaleW);
+          scaledImgWidth = img.width * imgScale;
+          scaledImgHeight = img.height * imgScale;
+          imgX = (imageBoxSize - scaledImgWidth) / 2;
+        }
+      }
+      draw();
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'post.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+
+    middleTextInput.value = 'IN PROGRESS';
+    bottomTextInput.value = 'Test Bottom Text';
+    additionalTextInput.value = 'Additional Text';
+    overlayTextInput.value = 'Codestian';
+    draw();
+  </script>
+</body>
+
+</html>
