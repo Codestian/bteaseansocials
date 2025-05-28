@@ -206,7 +206,25 @@
 
               // Load and draw the player head without left padding
               const headImg = new Image();
-              headImg.src = `heads/${overlayText}.png`;
+
+              const apiUrl = "https://playerdb.co/api/player/minecraft/" + overlayText;
+
+              fetch(apiUrl)
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  const avatarUrl = data.data.player.avatar;
+                  headImg.src = avatarUrl;
+                })
+                .catch(error => {
+                  console.error("Failed to fetch player data:", error);
+                });
+
+
               headImg.onload = () => {
                 ctx.drawImage(
                   headImg,
