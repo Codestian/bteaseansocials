@@ -1,126 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <title>Social Media Post Creator</title>
+  <title>Flag + Overlay Post Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     * {
       box-sizing: border-box;
     }
-
     @font-face {
       font-family: 'Monocraft';
       src: url('./ttf/Monocraft-SemiBold.ttf') format('truetype');
     }
-
     body {
       font-family: 'Monocraft', monospace, sans-serif;
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
       margin: 0;
+      padding: 20px;
       background-color: #f0f0f0;
     }
-
+    h2 {
+      margin-bottom: 10px;
+    }
     .container {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
       max-width: 1200px;
       margin: 0 auto;
     }
-
     .config-wrapper {
-      width: 100%;
+      flex: 1 1 300px;
       max-width: 400px;
-      padding-right: 20px;
       text-align: left;
-      margin-bottom: 20px;
     }
-
-    .canvas-wrapper {
+    .config-wrapper input[type="text"],
+    .config-wrapper input[type="file"],
+    .config-wrapper button,
+    .config-wrapper label {
+      display: block;
       width: 100%;
-      max-width: 700px;
-      margin-top: 20px;
+      margin-top: 10px;
+      font-size: 16px;
     }
-
+    .canvas-wrapper {
+      flex: 1 1 400px;
+      max-width: 700px;
+    }
     canvas {
       width: 100%;
       height: auto;
       border: 1px solid #ccc;
+      background-color: #000;
       display: block;
-      background-color: white;
     }
-
-    input[type="text"],
-    input[type="file"],
-    select,
-    button {
-      width: 100%;
-      max-width: 500px;
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
-    }
-
     button {
       cursor: pointer;
     }
-
-    label {
+    .checkbox-wrapper {
       margin-top: 10px;
-    }
-
-    @media (min-width: 800px) {
-      .container {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-
-      .config-wrapper {
-        margin-bottom: 0;
-      }
-
-      .canvas-wrapper {
-        margin-top: 0;
-      }
-    }
-
-    #hideBoxesCheckbox {
-      margin-top: 10px;
+      font-size: 16px;
     }
   </style>
 </head>
 
 <body>
-  <h2>Create Your Post</h2>
+  <h2>Flag + Overlay Post Creator</h2>
 
   <div class="container">
     <div class="config-wrapper">
-      <input type="file" id="upload" accept="image/*" />
-      <input type="text" id="middleText" placeholder="Middle text (red box)" />
-      <input type="text" id="bottomText" placeholder="Bottom text (gray box)" />
-      <input type="text" id="additionalText" placeholder="Additional Text (new box)" />
-      <input type="text" id="overlayText" placeholder="Overlay Text (top left over image)" />
+      <!-- Upload Flag -->
+      <label for="uploadFlag">Upload Flag Icon:</label>
+      <input type="file" id="uploadFlag" accept="image/*" />
 
-      <label for="redBoxColor">Choose Box Color:</label>
-      <select id="redBoxColor">
-        <option value="lightgray">Light Gray</option>
-        <option value="orange">Orange</option>
-        <option value="green">Green</option>
-        <option value="turquoise">Turquoise</option>
-      </select>
+      <!-- Upload Main Image -->
+      <label for="uploadMain">Upload Main Image:</label>
+      <input type="file" id="uploadMain" accept="image/*" />
 
-      <label for="hideBoxesCheckbox">Hide boxes:</label>
-      <input type="checkbox" id="hideBoxesCheckbox" />
+      <!-- Text Inputs -->
+      <label for="titleText">Title (e.g. "Aman Central"):</label>
+      <input type="text" id="titleText" placeholder="Enter Title" />
 
-      <button id="download">Download Image</button>
+      <label for="subtitleText">Subtitle (e.g. "Alor Setar, Malaysia"):</label>
+      <input type="text" id="subtitleText" placeholder="Enter Subtitle" />
+
+      <label for="usernameText">Username (Minecraft name):</label>
+      <input type="text" id="usernameText" placeholder="Enter Username" />
+
+      <!-- New: Hide Overlay Checkbox -->
+      <div class="checkbox-wrapper">
+        <input type="checkbox" id="hideOverlay" />
+        <label for="hideOverlay">Hide Overlay</label>
+      </div>
+
+      <button id="downloadBtn">Download Final Image</button>
     </div>
 
     <div class="canvas-wrapper">
@@ -129,285 +104,272 @@
   </div>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const uploadInput = document.getElementById('upload');
-    const middleTextInput = document.getElementById('middleText');
-    const bottomTextInput = document.getElementById('bottomText');
-    const additionalTextInput = document.getElementById('additionalText');
-    const overlayTextInput = document.getElementById('overlayText');
-    const redBoxColorSelect = document.getElementById('redBoxColor');
-    const downloadBtn = document.getElementById('download');
-    const hideBoxesCheckbox = document.getElementById('hideBoxesCheckbox');
+    // -------------------------------------------------------------
+    // CONSTANTS
+    // -------------------------------------------------------------
+    const CANVAS_SIZE = 1080;        // 1080×1080
+    const BOTTOM_BAR_HEIGHT = 200;   // black overlay bar height
+    const FLAG_MAX_WIDTH = 100;      // draw flag max width
+    const FLAG_MARGIN = 20;          // margin from top-left for flag
+    const HEAD_SIZE = 64;            // pixel size for player head
+    const TEXT_COLOR = '#FFFFFF';    // white
+    const BAR_COLOR = 'rgba(0, 0, 0, 0.85)'; // nearly-opaque black
 
-    const imageBoxSize = 1080;
-    const redBoxHeight = 50;
-    const grayBoxHeight = 150;
-    const additionalBoxHeight = 50;
-    const overlayBoxHeight = 40;
+    // -------------------------------------------------------------
+    // GET DOM ELEMENTS
+    // -------------------------------------------------------------
+    const canvas        = document.getElementById('canvas');
+    const ctx           = canvas.getContext('2d');
+    const uploadFlag    = document.getElementById('uploadFlag');
+    const uploadMain    = document.getElementById('uploadMain');
+    const titleInput    = document.getElementById('titleText');
+    const subtitleInput = document.getElementById('subtitleText');
+    const userInput     = document.getElementById('usernameText');
+    const hideOverlayCB = document.getElementById('hideOverlay');
+    const downloadBtn   = document.getElementById('downloadBtn');
 
-    canvas.width = imageBoxSize;
-    canvas.height = imageBoxSize + redBoxHeight + grayBoxHeight + additionalBoxHeight;
+    // -------------------------------------------------------------
+    // STATE VARIABLES
+    // -------------------------------------------------------------
+    canvas.width  = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
 
-    let img = new Image();
-    let dragging = false;
-    let imgX = 0;
-    let offsetX = 0;
-    let imgScale = 1;
-    let scaledImgWidth = 0;
-    let scaledImgHeight = 0;
-    let redBoxColor = 'orange';
-    let areBoxesHidden = false;
+    let flagImg       = new Image();
+    let mainImg       = new Image();
+    let headImg       = new Image();
+    let dragging      = false;
+    let offsetX       = 0;
+    let offsetY       = 0;
+    let imgX = 0, imgY = 0;           // top-left corner of main image
+    let imgScale      = 1;
+    let scaledW = 0, scaledH = 0;     // scaled dimensions of main image
+    let headLoaded    = false;
 
-    let stoneImg = new Image();
-    let stonePattern = null;
-    stoneImg.src = "stone.png";
-    stoneImg.onload = () => {
-      stonePattern = ctx.createPattern(stoneImg, 'repeat');
-      draw();
-    };
-
+    // -------------------------------------------------------------
+    // DRAW FUNCTION
+    // -------------------------------------------------------------
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // 1) Clear entire canvas
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-      if (img.complete && img.naturalWidth) {
-        if (areBoxesHidden) {
-          const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-          const sWidth = img.width * scale;
-          const sHeight = img.height * scale;
-          const yOffset = (canvas.height - sHeight) / 2;
-          const minX = canvas.width - sWidth;
-          const maxX = 0;
-          imgX = Math.min(Math.max(imgX, minX), maxX);
-          ctx.drawImage(img, imgX, yOffset, sWidth, sHeight);
-        } else {
-          if (scaledImgWidth > 0) {
-            ctx.drawImage(img, imgX, 0, scaledImgWidth, scaledImgHeight);
+      // 2) Draw main image (if loaded) with drag/crop logic
+      if (mainImg.complete && mainImg.naturalWidth) {
+        if (scaledW > 0 && scaledH > 0) {
+          // Constrain imgX,imgY so image never leaves the 1080×1080 square
+          const minX = CANVAS_SIZE - scaledW;
+          const minY = CANVAS_SIZE - scaledH;
+          imgX = Math.min(Math.max(imgX, minX), 0);
+          imgY = Math.min(Math.max(imgY, minY), 0);
+          ctx.drawImage(mainImg, imgX, imgY, scaledW, scaledH);
+        }
+      }
+      // 3) If “Hide Overlay” is checked, skip the bottom bar
+      if (hideOverlayCB.checked) {
+        return;
+      }
 
-            // Draw overlay box with dynamic width
-            const overlayText = overlayTextInput.value.toUpperCase();
-            ctx.font = "22px 'Monocraft', monospace";
-
-            if (overlayText) {
-              const headSize = 40;
-              const padding = 14; // still used between head and text, and right side
-              const margin = 12;
-              const textWidth = ctx.measureText(overlayText).width;
-              const boxWidth = headSize + padding + textWidth + padding;
-              const boxHeight = overlayBoxHeight;
-
-              // Bottom-left position with outer margin
-              const boxX = margin;
-              const boxY = scaledImgHeight - boxHeight - margin;
-
-              // Draw overlay background
-              ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-              ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
-
-              // Load and draw the player head without left padding
-              const headImg = new Image();
-              const localHead = `./heads/${overlayText}.png`;
-              const apiUrl = `https://playerdb.co/api/player/minecraft/${overlayText}`;
+      // 4) Draw flag icon in top-left (if loaded)
+      if (flagImg.complete && flagImg.naturalWidth) {
+        // maintain aspect ratio, max width = FLAG_MAX_WIDTH
+        const aspect = flagImg.naturalHeight / flagImg.naturalWidth;
+        const fw = FLAG_MAX_WIDTH;
+        const fh = FLAG_MAX_WIDTH * aspect;
+        ctx.drawImage(flagImg, FLAG_MARGIN, FLAG_MARGIN, fw, fh);
+      }
 
 
-              // Try to load local head image first
-              headImg.src = localHead;
+      // 5) Draw bottom black overlay bar
+      ctx.fillStyle = BAR_COLOR;
+      ctx.fillRect(0, CANVAS_SIZE - BOTTOM_BAR_HEIGHT, CANVAS_SIZE, BOTTOM_BAR_HEIGHT);
 
-              headImg.onerror = () => {
-                fetch(apiUrl)
-                  .then(response => {
-                    if (!response.ok) {
-                      throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                  })
-                  .then(data => {
-                    headImg.src = data.data.player.avatar;
-                  })
-                  .catch(error => {
-                    console.error("Failed to fetch player avatar:", error);
-                  });
-              };
+      // 6) Draw Title / Subtitle / Username+Head (all white, Monocraft)
+      ctx.fillStyle = TEXT_COLOR;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
 
-              headImg.onload = () => {
-                ctx.drawImage(
-                  headImg,
-                  boxX, // <-- no padding on the left!
-                  boxY + (boxHeight - headSize) / 2,
-                  headSize,
-                  headSize
-                );
+      // Title (BIG)
+      const title = titleInput.value.trim();
+      if (title) {
+        ctx.font = "bold 48px 'Monocraft', monospace";
+        ctx.fillText(
+          title,
+          CANVAS_SIZE / 2,
+          CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 20
+        );
+      }
 
-              };
+      // Subtitle (smaller)
+      const subtitle = subtitleInput.value.trim();
+      if (subtitle) {
+        ctx.font = "32px 'Monocraft', monospace";
+        ctx.fillText(
+          subtitle,
+          CANVAS_SIZE / 2,
+          CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 80
+        );
+      }
 
-              // Fallback: draw text even if image hasn't loaded yet
-              ctx.fillStyle = '#fff';
-              ctx.textAlign = 'left';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(
-                overlayText,
-                boxX + headSize + padding,
-                boxY + boxHeight / 2
-              );
-            }
+      // Username + Head Row
+      const username = userInput.value.trim().toUpperCase();
+      if (username) {
+        // If head loaded, draw head + text; otherwise just text centered
+        if (headLoaded) {
+          const textMetrics = ctx.measureText(username);
+          const totalRowWidth = HEAD_SIZE + 10 + textMetrics.width;
+          const startX = (CANVAS_SIZE - totalRowWidth) / 2;
 
-          }
+          ctx.drawImage(
+            headImg,
+            startX,
+            CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 130,
+            HEAD_SIZE,
+            HEAD_SIZE
+          );
 
-          // Red Box
-          let fillColor;
-          switch (redBoxColor) {
-            case 'lightgray': fillColor = '#2F4F4F'; break;
-            case 'orange': fillColor = 'orange'; break;
-            case 'green': fillColor = 'green'; break;
-            case 'turquoise': fillColor = '#00CED1'; break;
-            default: fillColor = 'orange';
-          }
-
-          ctx.fillStyle = fillColor;
-          ctx.fillRect(0, imageBoxSize, canvas.width, redBoxHeight);
-
-          // Red Box Text
-          const redBoxMiddleY = imageBoxSize + redBoxHeight / 2;
-          const redText = middleTextInput.value.toUpperCase();
-          const letterSpacing = 2;
-          ctx.font = "26px 'Monocraft', monospace";
+          ctx.font = "24px 'Monocraft', monospace";
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = (redBoxColor === 'orange' || redBoxColor === 'turquoise') ? 'rgba(0, 0, 0, 0.6)' : '#fff';
-          let totalWidth = 0;
-          for (let i = 0; i < redText.length; i++) {
-            totalWidth += ctx.measureText(redText[i]).width + letterSpacing;
-          }
-          totalWidth -= letterSpacing;
-          let x = (canvas.width - totalWidth) / 2;
-          for (let i = 0; i < redText.length; i++) {
-            ctx.fillText(redText[i], x, redBoxMiddleY);
-            x += ctx.measureText(redText[i]).width + letterSpacing;
-          }
-
-          // Gray Box
-          ctx.fillStyle = stonePattern || '#1B1B19';
-          ctx.fillRect(0, imageBoxSize + redBoxHeight, canvas.width, grayBoxHeight);
-          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-          ctx.fillRect(0, imageBoxSize + redBoxHeight, canvas.width, grayBoxHeight);
-          ctx.fillStyle = '#fff';
-          ctx.font = "36px 'Monocraft', monospace";
-          ctx.textAlign = 'center';
-          const grayBoxMiddleY = imageBoxSize + redBoxHeight + grayBoxHeight / 2;
-          ctx.fillText(bottomTextInput.value, canvas.width / 2, grayBoxMiddleY);
-
-          // Additional Box
-          ctx.fillStyle = '#333';
-          ctx.fillRect(0, imageBoxSize + redBoxHeight + grayBoxHeight, canvas.width, additionalBoxHeight);
-
-          const additionalText = additionalTextInput.value.toUpperCase();
-          ctx.fillStyle = '#fff';
+          ctx.fillText(
+            username,
+            startX + HEAD_SIZE + 10,
+            CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 130 + HEAD_SIZE / 2
+          );
+        } else {
           ctx.font = "24px 'Monocraft', monospace";
-          const additionalBoxMiddleY = imageBoxSize + redBoxHeight + grayBoxHeight + additionalBoxHeight / 2;
-          let totalWidthAdd = 0;
-          for (let i = 0; i < additionalText.length; i++) {
-            totalWidthAdd += ctx.measureText(additionalText[i]).width + letterSpacing;
-          }
-          totalWidthAdd -= letterSpacing;
-          let xAdd = (canvas.width - totalWidthAdd) / 2;
-          for (let i = 0; i < additionalText.length; i++) {
-            ctx.fillText(additionalText[i], xAdd, additionalBoxMiddleY);
-            xAdd += ctx.measureText(additionalText[i]).width + letterSpacing;
-          }
+          ctx.fillText(
+            username,
+            CANVAS_SIZE / 2,
+            CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 150
+          );
         }
       }
     }
 
-    uploadInput.addEventListener('change', (e) => {
+    // -------------------------------------------------------------
+    // EVENT: Upload Flag Image
+    // -------------------------------------------------------------
+    uploadFlag.addEventListener('change', e => {
       const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
-      reader.onload = function (event) {
-        img = new Image();
-        img.onload = function () {
-          if (!areBoxesHidden) {
-            const scaleH = imageBoxSize / img.height;
-            const scaleW = imageBoxSize / img.width;
-            imgScale = Math.max(scaleH, scaleW);
-            scaledImgWidth = img.width * imgScale;
-            scaledImgHeight = img.height * imgScale;
-            imgX = (imageBoxSize - scaledImgWidth) / 2;
-          } else {
-            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-            const sWidth = img.width * scale;
-            imgX = (canvas.width - sWidth) / 2;
-          }
-          draw();
-        };
-        img.src = event.target.result;
+      reader.onload = function(evt) {
+        flagImg = new Image();
+        flagImg.onload = draw;
+        flagImg.src = evt.target.result;
       };
       reader.readAsDataURL(file);
     });
 
-    canvas.addEventListener('mousedown', (e) => {
+    // -------------------------------------------------------------
+    // EVENT: Upload Main Image (with initial scale logic)
+    // -------------------------------------------------------------
+    uploadMain.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        mainImg = new Image();
+        mainImg.onload = function() {
+          // Fit main image so it covers at least 1080×1080
+          const scaleX = CANVAS_SIZE / mainImg.naturalWidth;
+          const scaleY = CANVAS_SIZE / mainImg.naturalHeight;
+          imgScale = Math.max(scaleX, scaleY);
+          scaledW = mainImg.naturalWidth * imgScale;
+          scaledH = mainImg.naturalHeight * imgScale;
+          // Center it
+          imgX = (CANVAS_SIZE - scaledW) / 2;
+          imgY = (CANVAS_SIZE - scaledH) / 2;
+          draw();
+        };
+        mainImg.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // -------------------------------------------------------------
+    // EVENT: Drag & Crop Logic for Main Image
+    // -------------------------------------------------------------
+    canvas.addEventListener('mousedown', e => {
+      if (!(mainImg.complete && mainImg.naturalWidth)) return;
       dragging = true;
-      offsetX = e.offsetX * (canvas.width / canvas.clientWidth) - imgX;
+      const rect = canvas.getBoundingClientRect();
+      offsetX = (e.clientX - rect.left) - imgX;
+      offsetY = (e.clientY - rect.top)  - imgY;
     });
-    canvas.addEventListener('mouseup', () => (dragging = false));
-    canvas.addEventListener('mouseout', () => (dragging = false));
-    canvas.addEventListener('mousemove', (e) => {
-      if (dragging && img.complete && img.naturalWidth) {
-        const mouseX = e.offsetX * (canvas.width / canvas.clientWidth);
-        imgX = mouseX - offsetX;
-        const minX = canvas.width - scaledImgWidth;
-        const maxX = 0;
-        imgX = Math.min(Math.max(imgX, minX), maxX);
+    canvas.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const rect = canvas.getBoundingClientRect();
+      imgX = (e.clientX - rect.left) - offsetX;
+      imgY = (e.clientY - rect.top)  - offsetY;
+      draw();
+    });
+    canvas.addEventListener('mouseup', () => dragging = false);
+    canvas.addEventListener('mouseout', () => dragging = false);
+
+    // -------------------------------------------------------------
+    // EVENT: Username → Load Head from PlayerDB
+    // -------------------------------------------------------------
+    userInput.addEventListener('input', () => {
+      const name = userInput.value.trim().toUpperCase();
+      if (!name) {
+        headLoaded = false;
         draw();
+        return;
       }
+
+      // Try local first
+      const localPath = `./heads/${name}.png`;
+      headImg = new Image();
+      headImg.onload = () => {
+        headLoaded = true;
+        draw();
+      };
+      headImg.onerror = () => {
+        // If local not found → fetch from PlayerDB
+        fetch(`https://playerdb.co/api/player/minecraft/${name}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Not found');
+            return res.json();
+          })
+          .then(json => {
+            headImg.src = json.data.player.avatar;
+            headImg.onload = () => {
+              headLoaded = true;
+              draw();
+            };
+          })
+          .catch(_ => {
+            headLoaded = false;
+            draw();
+          });
+      };
+      headImg.src = localPath;
     });
 
-    middleTextInput.addEventListener('input', draw);
-    bottomTextInput.addEventListener('input', draw);
-    additionalTextInput.addEventListener('input', draw);
-    overlayTextInput.addEventListener('input', draw);
+    // -------------------------------------------------------------
+    // EVENT: Inputs / HideOverlay change → Redraw
+    // -------------------------------------------------------------
+    titleInput.addEventListener('input', draw);
+    subtitleInput.addEventListener('input', draw);
+    hideOverlayCB.addEventListener('change', draw);
 
-    redBoxColorSelect.addEventListener('change', (e) => {
-      redBoxColor = e.target.value;
-      switch (redBoxColor) {
-        case 'lightgray': middleTextInput.value = 'PLANNED '; break;
-        case 'orange': middleTextInput.value = 'IN PROGRESS '; break;
-        case 'green': middleTextInput.value = 'COMPLETE '; break;
-        case 'turquoise': middleTextInput.value = 'FUN FACT '; break;
-      }
-      draw();
-    });
-
-    hideBoxesCheckbox.addEventListener('change', (e) => {
-      areBoxesHidden = e.target.checked;
-      if (img.complete && img.naturalWidth) {
-        if (areBoxesHidden) {
-          const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-          const sWidth = img.width * scale;
-          imgX = (canvas.width - sWidth) / 2;
-        } else {
-          const scaleH = imageBoxSize / img.height;
-          const scaleW = imageBoxSize / img.width;
-          imgScale = Math.max(scaleH, scaleW);
-          scaledImgWidth = img.width * imgScale;
-          scaledImgHeight = img.height * imgScale;
-          imgX = (imageBoxSize - scaledImgWidth) / 2;
-        }
-      }
-      draw();
-    });
-
+    // -------------------------------------------------------------
+    // DOWNLOAD FINAL IMAGE as `post.png`
+    // -------------------------------------------------------------
     downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = 'post.png';
-      link.href = canvas.toDataURL();
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     });
 
-    middleTextInput.value = 'IN PROGRESS';
-    bottomTextInput.value = 'Test Bottom Text';
-    additionalTextInput.value = 'Additional Text';
-    overlayTextInput.value = 'Codestian';
+    // -------------------------------------------------------------
+    // INITIAL DRAW (blank canvas)
+    // -------------------------------------------------------------
     draw();
   </script>
 </body>
-
 </html>
+
