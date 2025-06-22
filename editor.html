@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Flag + Overlay Post Creator</title>
+  <title>BTE ASEAN Post Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -21,7 +21,13 @@
       background-color: #f0f0f0;
     }
     h2 {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      font-family: 'Monocraft', monospace;
+      font-size: 28px;
+      font-weight: bold;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
     .container {
       display: flex;
@@ -38,12 +44,78 @@
     }
     .config-wrapper input[type="text"],
     .config-wrapper input[type="file"],
-    .config-wrapper button,
-    .config-wrapper label {
+    .config-wrapper button {
       display: block;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      padding: 12px 16px;
+      height: 48px;
       font-size: 16px;
+      font-family: 'Monocraft', monospace;
+      background-color: #2d2d2d;
+      border: 2px solid #555;
+      border-radius: 0;
+      color: #ffffff;
+      box-shadow: inset 2px 2px 0px #1a1a1a, inset -2px -2px 0px #404040;
+      transition: all 0.2s ease;
+    }
+    .config-wrapper input[type="text"]:focus,
+    .config-wrapper input[type="file"]:focus {
+      outline: none;
+      border-color: #569c15;
+      box-shadow: inset 2px 2px 0px #1a1a1a, inset -2px -2px 0px #404040, 0 0 8px rgba(86, 156, 21, 0.3);
+    }
+    .config-wrapper input[type="text"]::placeholder {
+      color: #888;
+    }
+    .config-wrapper button {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-family: 'Monocraft', monospace;
+      font-weight: bold;
+      background: linear-gradient(to bottom, #5a5a5a 0%, #3a3a3a 100%);
+      border: 2px solid #2d2d2d;
+      border-radius: 0;
+      color: #ffffff;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 
+        inset 2px 2px 0px #7a7a7a,
+        inset -2px -2px 0px #2a2a2a,
+        0 4px 0px #2d2d2d;
+      transition: all 0.1s ease;
+      position: relative;
+      top: 0;
+    }
+    .config-wrapper button:hover {
+      background: linear-gradient(to bottom, #6a6a6a 0%, #4a4a4a 100%);
+      box-shadow: 
+        inset 2px 2px 0px #8a8a8a,
+        inset -2px -2px 0px #3a3a3a,
+        0 4px 0px #2d2d2d;
+    }
+    .config-wrapper button:active {
+      top: 2px;
+      box-shadow: 
+        inset 2px 2px 0px #7a7a7a,
+        inset -2px -2px 0px #2a2a2a,
+        0 2px 0px #2d2d2d;
+    }
+    .config-wrapper label {
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-family: 'Monocraft', monospace;
+      font-weight: bold;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     .canvas-wrapper {
       flex: 1 1 400px;
@@ -63,36 +135,84 @@
       margin-top: 10px;
       font-size: 16px;
     }
+    /* Special styling for the download button */
+    #downloadBtn {
+      background: linear-gradient(to bottom, #569c15 0%, #3a7a0a 100%);
+      border-color: #2d5a0a;
+      box-shadow: 
+        inset 2px 2px 0px #7ac15a,
+        inset -2px -2px 0px #2d5a0a,
+        0 4px 0px #2d5a0a;
+    }
+    #downloadBtn:hover {
+      background: linear-gradient(to bottom, #66ac25 0%, #4a8a1a 100%);
+      box-shadow: 
+        inset 2px 2px 0px #8ad16a,
+        inset -2px -2px 0px #3d6a1a,
+        0 4px 0px #2d5a0a;
+    }
+    #downloadBtn:active {
+      top: 2px;
+      box-shadow: 
+        inset 2px 2px 0px #7ac15a,
+        inset -2px -2px 0px #2d5a0a,
+        0 2px 0px #2d5a0a;
+    }
   </style>
 </head>
 
 <body>
-  <h2>Flag + Overlay Post Creator</h2>
+  <h2>BTE ASEAN Post Creator</h2>
 
   <div class="container">
     <div class="config-wrapper">
-      <!-- Upload Flag -->
-      <label for="uploadFlag">Upload Flag Icon:</label>
-      <input type="file" id="uploadFlag" accept="image/*" />
-
       <!-- Upload Main Image -->
       <label for="uploadMain">Upload Main Image:</label>
       <input type="file" id="uploadMain" accept="image/*" />
 
       <!-- Text Inputs -->
-      <label for="titleText">Title (e.g. "Aman Central"):</label>
+      <label for="titleText">Title:</label>
       <input type="text" id="titleText" placeholder="Enter Title" />
 
-      <label for="subtitleText">Subtitle (e.g. "Alor Setar, Malaysia"):</label>
+      <label for="subtitleText">Subtitle:</label>
       <input type="text" id="subtitleText" placeholder="Enter Subtitle" />
 
-      <label for="usernameText">Username (Minecraft name):</label>
-      <input type="text" id="usernameText" placeholder="Enter Username" />
+      <!-- Preset Player Names Dropdown -->
+      <label for="presetPlayers">Preset Player Names:</label>
+      <select id="presetPlayers" style="display: block; width: 100%; margin-top: 8px; margin-bottom: 15px; padding: 12px 16px; font-size: 16px; font-family: 'Monocraft', monospace; background-color: #2d2d2d; border: 2px solid #555; border-radius: 0; color: #ffffff; box-shadow: inset 2px 2px 0px #1a1a1a, inset -2px -2px 0px #404040;">
+        <option value="">-- Select Preset Player --</option>
+        <option value="codestian">codestian</option>
+        <option value="meowmeowzip">meowmeowzip</option>
+        <option value="dirtytin">dirtytin</option>
+        <option value="thestonemc">thestonemc</option>
+        <option value="bkcom123">bkcom123</option>
+        <option value="rice_commissar">rice_commissar</option>
+        <option value="sup13">sup13</option>
+        <option value="im_tir3d">im_tir3d</option>
+        <option value="mukhly">mukhly</option>
+        <option value="MegaPlace173">MegaPlace173</option>
+      </select>
 
-      <!-- New: Hide Overlay Checkbox -->
-      <div class="checkbox-wrapper">
-        <input type="checkbox" id="hideOverlay" />
-        <label for="hideOverlay">Hide Overlay</label>
+      <!-- Country Flag Selector -->
+      <label for="countryFlag">Select Country Flag:</label>
+      <select id="countryFlag" style="display: block; width: 100%; margin-top: 8px; margin-bottom: 15px; padding: 12px 16px; font-size: 16px; font-family: 'Monocraft', monospace; background-color: #2d2d2d; border: 2px solid #555; border-radius: 0; color: #ffffff; box-shadow: inset 2px 2px 0px #1a1a1a, inset -2px -2px 0px #404040;">
+        <option value="">-- Select ASEAN Country --</option>
+        <option value="bn">Brunei</option>
+        <option value="kh">Cambodia</option>
+        <option value="id">Indonesia</option>
+        <option value="la">Laos</option>
+        <option value="my">Malaysia</option>
+        <option value="mm">Myanmar</option>
+        <option value="ph">Philippines</option>
+        <option value="sg">Singapore</option>
+        <option value="th">Thailand</option>
+        <option value="vn">Vietnam</option>
+      </select>
+
+      <label for="usernameText">Username:</label>
+      <div style="display: flex; gap: 0px; align-items: flex-end;">
+        <input type="text" id="usernameText" placeholder="Enter Username" style="flex: 1; margin-bottom: 15px;" />
+        <button id="loadHeadBtn" style="width: 48px; height: 48px; margin-bottom: 15px; padding: 0; font-size: 20px; font-weight: bold; background: linear-gradient(to bottom, #569c15 0%, #3a7a0a 100%); border: 2px solid #2d5a0a; color: #ffffff; box-shadow: inset 2px 2px 0px #7ac15a, inset -2px -2px 0px #2d5a0a;">></button>
       </div>
 
       <button id="downloadBtn">Download Final Image</button>
@@ -107,32 +227,36 @@
     // -------------------------------------------------------------
     // CONSTANTS
     // -------------------------------------------------------------
-    const CANVAS_SIZE = 1080;        // 1080×1080
+    const CANVAS_WIDTH = 1080;      // 1080×1280
+    const CANVAS_HEIGHT = 1280;     // 1080×1280
+    const MAIN_IMAGE_SIZE = 1080;   // main image area size
     const BOTTOM_BAR_HEIGHT = 200;   // black overlay bar height
     const FLAG_MAX_WIDTH = 100;      // draw flag max width
     const FLAG_MARGIN = 20;          // margin from top-left for flag
-    const HEAD_SIZE = 64;            // pixel size for player head
+    const HEAD_SIZE = 48;            // pixel size for player head
     const TEXT_COLOR = '#FFFFFF';    // white
-    const BAR_COLOR = 'rgba(0, 0, 0, 0.85)'; // nearly-opaque black
+    const BACKGROUND_COLOR = '#1a1a1a'; // dark gray
+    const GREEN_LINE_COLOR = '#569c15'; // green
 
     // -------------------------------------------------------------
     // GET DOM ELEMENTS
     // -------------------------------------------------------------
     const canvas        = document.getElementById('canvas');
     const ctx           = canvas.getContext('2d');
-    const uploadFlag    = document.getElementById('uploadFlag');
+    const countryFlag   = document.getElementById('countryFlag');
     const uploadMain    = document.getElementById('uploadMain');
     const titleInput    = document.getElementById('titleText');
     const subtitleInput = document.getElementById('subtitleText');
     const userInput     = document.getElementById('usernameText');
-    const hideOverlayCB = document.getElementById('hideOverlay');
     const downloadBtn   = document.getElementById('downloadBtn');
+    const loadHeadBtn   = document.getElementById('loadHeadBtn');
+    const presetPlayers = document.getElementById('presetPlayers');
 
     // -------------------------------------------------------------
     // STATE VARIABLES
     // -------------------------------------------------------------
-    canvas.width  = CANVAS_SIZE;
-    canvas.height = CANVAS_SIZE;
+    canvas.width  = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
 
     let flagImg       = new Image();
     let mainImg       = new Image();
@@ -150,25 +274,21 @@
     // -------------------------------------------------------------
     function draw() {
       // 1) Clear entire canvas
-      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
       // 2) Draw main image (if loaded) with drag/crop logic
       if (mainImg.complete && mainImg.naturalWidth) {
         if (scaledW > 0 && scaledH > 0) {
           // Constrain imgX,imgY so image never leaves the 1080×1080 square
-          const minX = CANVAS_SIZE - scaledW;
-          const minY = CANVAS_SIZE - scaledH;
+          const minX = MAIN_IMAGE_SIZE - scaledW;
+          const minY = MAIN_IMAGE_SIZE - scaledH;
           imgX = Math.min(Math.max(imgX, minX), 0);
           imgY = Math.min(Math.max(imgY, minY), 0);
           ctx.drawImage(mainImg, imgX, imgY, scaledW, scaledH);
         }
       }
-      // 3) If “Hide Overlay” is checked, skip the bottom bar
-      if (hideOverlayCB.checked) {
-        return;
-      }
 
-      // 4) Draw flag icon in top-left (if loaded)
+      // 3) Draw flag icon in top-left (if loaded)
       if (flagImg.complete && flagImg.naturalWidth) {
         // maintain aspect ratio, max width = FLAG_MAX_WIDTH
         const aspect = flagImg.naturalHeight / flagImg.naturalWidth;
@@ -177,10 +297,19 @@
         ctx.drawImage(flagImg, FLAG_MARGIN, FLAG_MARGIN, fw, fh);
       }
 
+      // 4) Draw bottom black overlay bar
+      ctx.fillStyle = BACKGROUND_COLOR;
+      ctx.fillRect(0, CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT, CANVAS_WIDTH, BOTTOM_BAR_HEIGHT);
 
-      // 5) Draw bottom black overlay bar
-      ctx.fillStyle = BAR_COLOR;
-      ctx.fillRect(0, CANVAS_SIZE - BOTTOM_BAR_HEIGHT, CANVAS_SIZE, BOTTOM_BAR_HEIGHT);
+      // 5.5) Draw green line above the background bar
+      ctx.fillStyle = GREEN_LINE_COLOR;
+      ctx.fillRect(0, CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT - 8, CANVAS_WIDTH, 8);
+
+      // Draw black box for head and username area (always visible, full width)
+      const headBoxY = CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT + 130;
+      const headBoxHeight = HEAD_SIZE + 20; // Add some padding
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, headBoxY, CANVAS_WIDTH, headBoxHeight);
 
       // 6) Draw Title / Subtitle / Username+Head (all white, Monocraft)
       ctx.fillStyle = TEXT_COLOR;
@@ -190,11 +319,11 @@
       // Title (BIG)
       const title = titleInput.value.trim();
       if (title) {
-        ctx.font = "bold 48px 'Monocraft', monospace";
+        ctx.font = "bold 32px 'Monocraft', monospace";
         ctx.fillText(
           title,
-          CANVAS_SIZE / 2,
-          CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 20
+          CANVAS_WIDTH / 2,
+          CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT + 29
         );
       }
 
@@ -204,60 +333,86 @@
         ctx.font = "32px 'Monocraft', monospace";
         ctx.fillText(
           subtitle,
-          CANVAS_SIZE / 2,
-          CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 80
+          CANVAS_WIDTH / 2,
+          CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT + 69
         );
       }
 
       // Username + Head Row
       const username = userInput.value.trim().toUpperCase();
       if (username) {
+        // Reset text color to white for username
+        ctx.fillStyle = TEXT_COLOR;
+        
         // If head loaded, draw head + text; otherwise just text centered
         if (headLoaded) {
+          ctx.font = "24px 'Monocraft', monospace";
           const textMetrics = ctx.measureText(username);
+          const textHeight = (textMetrics.actualBoundingBoxAscent && textMetrics.actualBoundingBoxDescent)
+            ? textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent
+            : 24; // fallback to font size if metrics not available
+
+          const unitHeight = Math.max(HEAD_SIZE, textHeight);
           const totalRowWidth = HEAD_SIZE + 10 + textMetrics.width;
-          const startX = (CANVAS_SIZE - totalRowWidth) / 2;
+          const startX = (CANVAS_WIDTH - totalRowWidth) / 2;
+
+          // Find the top Y so the unit is vertically centered in the black box
+          const unitTopY = headBoxY + (headBoxHeight - unitHeight) / 2;
+
+          // Calculate Y for head and text so both are aligned to the top of the unit
+          const headY = unitTopY + (unitHeight - HEAD_SIZE) / 2;
+          const textY = unitTopY + (unitHeight - textHeight) / 2 + (textMetrics.actualBoundingBoxAscent || textHeight / 2);
 
           ctx.drawImage(
             headImg,
             startX,
-            CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 130,
+            headY,
             HEAD_SIZE,
             HEAD_SIZE
           );
 
-          ctx.font = "24px 'Monocraft', monospace";
           ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
+          ctx.textBaseline = 'alphabetic';
           ctx.fillText(
             username,
             startX + HEAD_SIZE + 10,
-            CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 130 + HEAD_SIZE / 2
+            headY + HEAD_SIZE / 2 + 10
           );
         } else {
           ctx.font = "24px 'Monocraft', monospace";
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
           ctx.fillText(
             username,
-            CANVAS_SIZE / 2,
-            CANVAS_SIZE - BOTTOM_BAR_HEIGHT + 150
+            CANVAS_WIDTH / 2,
+            headBoxY + headBoxHeight / 2
           );
         }
       }
     }
 
     // -------------------------------------------------------------
-    // EVENT: Upload Flag Image
+    // EVENT: Country Flag Selection
     // -------------------------------------------------------------
-    uploadFlag.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
+    countryFlag.addEventListener('change', e => {
+      const countryCode = e.target.value;
+      if (!countryCode) {
         flagImg = new Image();
-        flagImg.onload = draw;
-        flagImg.src = evt.target.result;
+        draw();
+        return;
+      }
+      
+      // Fetch flag from square-flags API
+      const flagUrl = `https://kapowaz.github.io/square-flags/flags/${countryCode}.svg`;
+      flagImg = new Image();
+      flagImg.crossOrigin = 'anonymous'; // Prevent canvas tainting
+      flagImg.onload = draw;
+      flagImg.onerror = () => {
+        console.error(`Failed to load flag for country code: ${countryCode}`);
+        flagImg = new Image();
+        draw();
       };
-      reader.readAsDataURL(file);
+      flagImg.src = flagUrl;
     });
 
     // -------------------------------------------------------------
@@ -271,14 +426,14 @@
         mainImg = new Image();
         mainImg.onload = function() {
           // Fit main image so it covers at least 1080×1080
-          const scaleX = CANVAS_SIZE / mainImg.naturalWidth;
-          const scaleY = CANVAS_SIZE / mainImg.naturalHeight;
+          const scaleX = MAIN_IMAGE_SIZE / mainImg.naturalWidth;
+          const scaleY = MAIN_IMAGE_SIZE / mainImg.naturalHeight;
           imgScale = Math.max(scaleX, scaleY);
           scaledW = mainImg.naturalWidth * imgScale;
           scaledH = mainImg.naturalHeight * imgScale;
           // Center it
-          imgX = (CANVAS_SIZE - scaledW) / 2;
-          imgY = (CANVAS_SIZE - scaledH) / 2;
+          imgX = (MAIN_IMAGE_SIZE - scaledW) / 2;
+          imgY = (MAIN_IMAGE_SIZE - scaledH) / 2;
           draw();
         };
         mainImg.src = evt.target.result;
@@ -309,7 +464,7 @@
     // -------------------------------------------------------------
     // EVENT: Username → Load Head from PlayerDB
     // -------------------------------------------------------------
-    userInput.addEventListener('input', () => {
+    loadHeadBtn.addEventListener('click', () => {
       const name = userInput.value.trim().toUpperCase();
       if (!name) {
         headLoaded = false;
@@ -332,11 +487,13 @@
             return res.json();
           })
           .then(json => {
-            headImg.src = json.data.player.avatar;
+            headImg = new Image();
+            headImg.crossOrigin = 'anonymous'; // Prevent canvas tainting
             headImg.onload = () => {
               headLoaded = true;
               draw();
             };
+            headImg.src = json.data.player.avatar;
           })
           .catch(_ => {
             headLoaded = false;
@@ -351,18 +508,216 @@
     // -------------------------------------------------------------
     titleInput.addEventListener('input', draw);
     subtitleInput.addEventListener('input', draw);
-    hideOverlayCB.addEventListener('change', draw);
+
+    // -------------------------------------------------------------
+    // EVENT: Preset Player Names Dropdown
+    // -------------------------------------------------------------
+    presetPlayers.addEventListener('change', e => {
+      const selectedPlayer = e.target.value;
+      if (selectedPlayer) {
+        userInput.value = selectedPlayer;
+        
+        // Set country flag based on selected player
+        let countryCode = '';
+        if (['sup13', 'im_tir3d'].includes(selectedPlayer)) {
+          countryCode = 'my'; // Malaysia
+        } else if (['codestian', 'meowmeowzip', 'rice_commissar', 'thestonemc'].includes(selectedPlayer)) {
+          countryCode = 'sg'; // Singapore
+        } else if (['dirtytin', 'bkcom123'].includes(selectedPlayer)) {
+          countryCode = 'th'; // Thailand
+        } else if (['mukhly'].includes(selectedPlayer)) {
+          countryCode = 'id'; // Indonesia
+        } else if (['MegaPlace173'].includes(selectedPlayer)) {
+          countryCode = 'th'; // Thailand
+        }
+        
+        // Set the country flag dropdown
+        if (countryCode) {
+          countryFlag.value = countryCode;
+          
+          // Load the flag image
+          const flagUrl = `https://kapowaz.github.io/square-flags/flags/${countryCode}.svg`;
+          flagImg = new Image();
+          flagImg.crossOrigin = 'anonymous'; // Prevent canvas tainting
+          flagImg.onload = draw;
+          flagImg.onerror = () => {
+            console.error(`Failed to load flag for country code: ${countryCode}`);
+            flagImg = new Image();
+            draw();
+          };
+          flagImg.src = flagUrl;
+        }
+        
+        draw();
+        
+        // Automatically load head for the selected preset player
+        const name = selectedPlayer.toUpperCase();
+        
+        // Try local first
+        const localPath = `./heads/${name}.png`;
+        headImg = new Image();
+        headImg.onload = () => {
+          headLoaded = true;
+          draw();
+        };
+        headImg.onerror = () => {
+          // If local not found → fetch from PlayerDB
+          fetch(`https://playerdb.co/api/player/minecraft/${name}`)
+            .then(res => {
+              if (!res.ok) throw new Error('Not found');
+              return res.json();
+            })
+            .then(json => {
+              headImg = new Image();
+              headImg.crossOrigin = 'anonymous'; // Prevent canvas tainting
+              headImg.onload = () => {
+                headLoaded = true;
+                draw();
+              };
+              headImg.src = json.data.player.avatar;
+            })
+            .catch(_ => {
+              headLoaded = false;
+              draw();
+            });
+        };
+        headImg.src = localPath;
+      }
+    });
+
+    // Clear preset dropdown when user manually types in username field
+    userInput.addEventListener('input', () => {
+      presetPlayers.value = '';
+      draw();
+    });
 
     // -------------------------------------------------------------
     // DOWNLOAD FINAL IMAGE as `post.png`
-    // -------------------------------------------------------------
     downloadBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'post.png';
-      link.href = canvas.toDataURL('image/png');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        // Try to get data URL from canvas
+        const dataURL = canvas.toDataURL('image/png');
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = 'post.png';
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        // If canvas is tainted, create a new canvas and redraw without external images
+        const newCanvas = document.createElement('canvas');
+        const newCtx = newCanvas.getContext('2d');
+        newCanvas.width = CANVAS_WIDTH;
+        newCanvas.height = CANVAS_HEIGHT;
+        
+        // Redraw without external images
+        newCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        
+        // Draw main image (if it's from file upload, it should be safe)
+        if (mainImg.complete && mainImg.naturalWidth && mainImg.src.startsWith('data:')) {
+          if (scaledW > 0 && scaledH > 0) {
+            const minX = MAIN_IMAGE_SIZE - scaledW;
+            const minY = MAIN_IMAGE_SIZE - scaledH;
+            const safeImgX = Math.min(Math.max(imgX, minX), 0);
+            const safeImgY = Math.min(Math.max(imgY, minY), 0);
+            newCtx.drawImage(mainImg, safeImgX, safeImgY, scaledW, scaledH);
+          }
+        }
+        
+        // Draw flag (if available and safe)
+        if (flagImg.complete && flagImg.naturalWidth && flagImg.crossOrigin === 'anonymous') {
+          try {
+            const aspect = flagImg.naturalHeight / flagImg.naturalWidth;
+            const fw = FLAG_MAX_WIDTH;
+            const fh = FLAG_MAX_WIDTH * aspect;
+            newCtx.drawImage(flagImg, FLAG_MARGIN, FLAG_MARGIN, fw, fh);
+          } catch (e) {
+            // Flag not available, skip it
+          }
+        }
+        
+        // Draw background elements
+        newCtx.fillStyle = BACKGROUND_COLOR;
+        newCtx.fillRect(0, CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT, CANVAS_WIDTH, BOTTOM_BAR_HEIGHT);
+        
+        newCtx.fillStyle = GREEN_LINE_COLOR;
+        newCtx.fillRect(0, CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT - 8, CANVAS_WIDTH, 8);
+        
+        const headBoxY = CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT + 130;
+        const headBoxHeight = HEAD_SIZE + 20;
+        newCtx.fillStyle = '#000000';
+        newCtx.fillRect(0, headBoxY, CANVAS_WIDTH, headBoxHeight);
+        
+        // Draw text
+        newCtx.fillStyle = TEXT_COLOR;
+        newCtx.textAlign = 'center';
+        newCtx.textBaseline = 'top';
+        
+        const title = titleInput.value.trim();
+        if (title) {
+          newCtx.font = "bold 32px 'Monocraft', monospace";
+          newCtx.fillText(title, CANVAS_WIDTH / 2, CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT + 29);
+        }
+        
+        const subtitle = subtitleInput.value.trim();
+        if (subtitle) {
+          newCtx.font = "32px 'Monocraft', monospace";
+          newCtx.fillText(subtitle, CANVAS_WIDTH / 2, CANVAS_HEIGHT - BOTTOM_BAR_HEIGHT + 69);
+        }
+        
+        const username = userInput.value.trim().toUpperCase();
+        if (username) {
+          newCtx.fillStyle = TEXT_COLOR;
+          
+          // Draw head and username if head is available and safe
+          if (headLoaded && headImg.complete && headImg.naturalWidth && headImg.crossOrigin === 'anonymous') {
+            try {
+              newCtx.font = "24px 'Monocraft', monospace";
+              const textMetrics = newCtx.measureText(username);
+              const textHeight = (textMetrics.actualBoundingBoxAscent && textMetrics.actualBoundingBoxDescent)
+                ? textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent
+                : 24;
+
+              const unitHeight = Math.max(HEAD_SIZE, textHeight);
+              const totalRowWidth = HEAD_SIZE + 10 + textMetrics.width;
+              const startX = (CANVAS_WIDTH - totalRowWidth) / 2;
+
+              const unitTopY = headBoxY + (headBoxHeight - unitHeight) / 2;
+              const headY = unitTopY + (unitHeight - HEAD_SIZE) / 2;
+              const textY = unitTopY + (unitHeight - textHeight) / 2 + (textMetrics.actualBoundingBoxAscent || textHeight / 2);
+
+              newCtx.drawImage(headImg, startX, headY, HEAD_SIZE, HEAD_SIZE);
+
+              newCtx.textAlign = 'left';
+              newCtx.textBaseline = 'alphabetic';
+              newCtx.fillText(username, startX + HEAD_SIZE + 10, headY + HEAD_SIZE / 2 + 10);
+            } catch (e) {
+              // Head not available, draw just username centered
+              newCtx.font = "24px 'Monocraft', monospace";
+              newCtx.textAlign = 'center';
+              newCtx.textBaseline = 'middle';
+              newCtx.fillText(username, CANVAS_WIDTH / 2, headBoxY + headBoxHeight / 2);
+            }
+          } else {
+            // No head available, draw just username centered
+            newCtx.font = "24px 'Monocraft', monospace";
+            newCtx.textAlign = 'center';
+            newCtx.textBaseline = 'middle';
+            newCtx.fillText(username, CANVAS_WIDTH / 2, headBoxY + headBoxHeight / 2);
+          }
+        }
+        
+        // Download the safe version
+        const safeDataURL = newCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = 'post.png';
+        link.href = safeDataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     });
 
     // -------------------------------------------------------------
@@ -372,4 +727,3 @@
   </script>
 </body>
 </html>
-
